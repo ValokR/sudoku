@@ -10,22 +10,8 @@ public class sudoku {
     //create 2d array that represents the 16x16 world
    cell[][] world_array = new cell[15][15];
 
+    public static void main(String[] args) {
 
-    //class to contain all info for each variable
-    public class cell {
-
-        String value;
-        List constraints;
-        int num_of_constraints;
-        int attempted_assignments;
-
-        //default constructor
-        public cell() {
-            value = "";
-            constraints = null;
-            num_of_constraints = constraints.size();
-            attempted_assignments = 0;
-        }
     }
 
     //check to see if all variables have been assigned a value
@@ -72,8 +58,24 @@ public class sudoku {
         return true;
     }
 
+    public cell select_unassigned_variable() {
+        //TODO find variable with minimum remaining possible values
+    }
 
-    public static void main(String[] args) {
+    //class to contain all info for each variable
+    public class cell {
 
+        String value;
+        List constraints;
+        int num_of_constraints;
+        int attempted_assignments;
+
+        //default constructor
+        public cell() {
+            value = "";
+            constraints = null;
+            num_of_constraints = constraints.size();
+            attempted_assignments = 0;
+        }
     }
 }
