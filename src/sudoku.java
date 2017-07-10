@@ -88,8 +88,31 @@ public class sudoku {
         }
         return cell;
     }    
-
+    
+    //make inferences based on value assignment to a cell
     public void inferences(cell cell) {
+        inference_row = cell.row;
+        inference_col = cell.col;
+        inference_val = cell.value;
+        
+        //remove from all cells in row.  Remove assigned value from domain
+        for (int i = 0; i <= 15; i++) {
+            world_array[inference_row][i].constraints.remove(inference_val);
+        }
+        
+        //remove from all cells in col.  Remove assigned value from domain
+        for (int i = 0; i <= 15; i++) {
+            world_array[i][inference_col].constraints.remove(inference_val);   
+        }
+        
+        //remove from all cells in box.  Remove assigned value from domain
+        int row_offset = (inference_row / 4) * 4;        
+        int col_offset = (inference_col / 4) * 4;
+        for (int i = 0; i < 4; i++) {            
+            for (int j = 0; j < 4; j++) {
+                world_array[row_offset + i][col_offset + j].constraints.remove(inference_val);
+            }
+        }
         
     }
     
