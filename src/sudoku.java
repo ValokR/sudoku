@@ -71,6 +71,20 @@ public class sudoku {
         }
         return true;
     }
+    
+    public cell mrv_hueristic() {
+        cell mrv_cell = new cell;
+        int mrv = 0;
+        for (cell[] array1: world_array) {            
+            for (cell value: array1) {
+                if (cell.constraints.size() > mrv) {
+                    mrv = cell.constraints.size()
+                    mrv_cell = cell
+                }
+            }
+            return mrv_cell
+        }
+    }    
 
 
     public static void main(String[] args) {
