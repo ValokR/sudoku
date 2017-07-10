@@ -72,18 +72,19 @@ public class sudoku {
         return true;
     }
     
+    //find cell with most constraints / minimum remaining number of values in its domain
     public cell mrv_hueristic() {
         cell mrv_cell = new cell;
         int mrv = 0;
         for (cell[] array1: world_array) {            
             for (cell value: array1) {
                 if (cell.constraints.size() > mrv) {
-                    mrv = cell.constraints.size()
-                    mrv_cell = cell
+                    mrv = cell.constraints.size();
+                    mrv_cell = cell;
                 }
             }
-            return mrv_cell
         }
+        return cell;
     }    
 
 
