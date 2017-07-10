@@ -18,6 +18,8 @@ public class sudoku {
         List constraints;
         int num_of_constraints;
         int attempted_assignments;
+        int cell_col;
+        int cell_row;
 
         //default constructor
         public cell() {
@@ -87,8 +89,31 @@ public class sudoku {
         return cell;
     }    
 
+    public void inferences(cell cell) {
+        
+    }
+    
+    //@param - a cell
+    //@return - array with all cells that share a domain with input cell
+    public arrray shared_space(cell cell) {
+            
+    }
 
     public static void main(String[] args) {
 
     }
+}
+
+
+
+As you're reading in data from text file, assign row and col values to each cell.
+int row_reset = 0;
+while (reader.hasNextLine()) { 
+    String[] = nextLine(); 
+    for (int i = 0;, i < String[].length; i++) {  
+        world_array[row_reset][i] = value;  
+        world_array[row_reset][i].row = row_reset;  
+        world_array[row_reset][i].col = i; 
+    } 
+    row_reset++;
 }
