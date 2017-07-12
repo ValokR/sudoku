@@ -1,8 +1,7 @@
 import javax.swing.*;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
 
 /**
  * Created by neil on 7/5/17.
@@ -19,13 +18,13 @@ public class sudoku extends file_selector {
         frame.pack();
         frame.setVisible(true);
 
-        file.file_to_array();
+        file_to_array(file);
     }
 
     //check to see if all variables have been assigned a value
     public boolean assignment_complete() {
-        for (cell[] array1: world_array) {
-            for (cell value: array1) {
+        for (cell[] array1 : world_array) {
+            for (cell value : array1) {
                 if (value.value == null) {
                     return false;
                 } else {
