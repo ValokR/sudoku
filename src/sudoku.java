@@ -1,38 +1,118 @@
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 /**
  * Created by neil on 7/5/17.
  */
-public class sudoku extends file_selector {
+public class sudoku {
 
+    static File myFile;
     //create 2d array that represents the 16x16 world
-    cell[][] world_array = new cell[15][15];
+    public cell[][] world_array = new cell[15][15];
+    ArrayList<String> world_constraints;
 
-    public static void main(String[] args) {
+
+    public static void main(String[] args) throws IOException {
+
         JFrame frame = new JFrame("file_selector");
-        frame.setContentPane(new file_selector().panel1);
+        file_selector fs = new file_selector();
+        frame.setContentPane(fs.panel1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
 
-        file_to_array(file);
+        myFile = fs.getFile();
+
+        while (myFile != null) {
+            sudoku my_puzzle = new sudoku();
+            my_puzzle.solve_puzzle();
+        }
+    }
+
+    public void solve_puzzle() throws IOException {
+        file_to_array(myFile);
+        initialize_constraints();
+        System.out.println(myFile.getName());
+
+        if (assignment_complete() == true) {
+            print_solution();
+        } else {
+            cell mrv_cell = mrv_hueristic();
+            //get remaining possible values
+            ArrayList<String> remaining_values = remaining_values(mrv_cell);
+
+            for (String value : remaining_values) {
+                cell temp_cell = mrv_cell;
+                temp_cell.value = value;
+                if (assignment_valid(temp_cell.row, temp_cell.col, temp_cell)) {
+                    mrv_cell.value = value;
+                    mrv_cell.attempted_assignments++;
+                    ArrayList<pairing> inferences_list = inferences(mrv_cell);
+                    if (inferences_list == null) {
+                        undo_inferences(inferences_list);
+                    } else {
+                        solve_puzzle();
+                    }
+                }
+                mrv_cell.value = null;
+            }
+        }
+    }
+
+    public void print_solution() {
+
+        int num_assignments = 0;
+
+        for (cell[] array1 : world_array) {
+            System.out.println();
+            for (cell value : array1) {
+                System.out.print(value.value);
+            }
+        }
+
+        for (cell[] array1 : world_array) {
+            for (cell value : array1) {
+                num_assignments += value.attempted_assignments;
+            }
+        }
+        System.out.println("There was a total of " + num_assignments + " value assignments attempted");
+
+    }
+
+    public void initialize_constraints() {
+        for (cell[] array1 : world_array) {
+            for (cell value : array1) {
+                inferences(value);
+            }
+        }
     }
 
     //check to see if all variables have been assigned a value
     public boolean assignment_complete() {
         for (cell[] array1 : world_array) {
             for (cell value : array1) {
-                if (value.value == null) {
+                if (value.value == null) ;
+                {
                     return false;
-                } else {
-                    return true;
                 }
             }
         }
-        return false;
+        return true;
+    }
+
+    public ArrayList remaining_values(cell cell) {
+        ArrayList<String> remaining_values = null;
+        for (int i = 0; i < cell.constraints.size(); i++) {
+            if (!cell.constraints.contains(world_constraints.get(i))) {
+                remaining_values.add(world_constraints.get(i));
+            }
+        }
+        return remaining_values;
     }
 
     //check to see if assignment of variable is valid i.e. no other occurences in line or square
@@ -44,7 +124,8 @@ public class sudoku extends file_selector {
             }
         }
 
-        //check for duplicat values in cols
+
+        //check for duplicate values in cols
         for (int i = 0; i < 15; i++) {
             if (cell.value == world_array[i][col].value && cell != world_array[i][col]) {
                 return false;
@@ -81,19 +162,33 @@ public class sudoku extends file_selector {
     }
 
     //make inferences based on value assignment to a cell
-    public void inferences(cell cell) {
+    public ArrayList inferences(cell cell) {
+
         int inference_row = cell.row;
         int inference_col = cell.col;
         String inference_val = cell.value;
+        ArrayList<pairing> inferences_list = null;
 
         //remove from all cells in row.  Remove assigned value from domain
         for (int i = 0; i <= 15; i++) {
-            world_array[inference_row][i].constraints.remove(inference_val);
+            if (!world_array[inference_row][i].constraints.contains(inference_val)) {
+                world_array[inference_row][i].constraints.add(inference_val);
+                pairing my_pairing = new pairing();
+                my_pairing.value = inference_val;
+                my_pairing.cell = world_array[inference_row][i];
+                inferences_list.add(my_pairing);
+            }
         }
 
         //remove from all cells in col.  Remove assigned value from domain
         for (int i = 0; i <= 15; i++) {
-            world_array[i][inference_col].constraints.remove(inference_val);
+            if (!world_array[i][inference_col].constraints.contains(inference_val)) {
+                world_array[i][inference_col].constraints.add(inference_val);
+                pairing my_pairing = new pairing();
+                my_pairing.value = inference_val;
+                my_pairing.cell = world_array[i][inference_col];
+                inferences_list.add(my_pairing);
+            }
         }
 
         //remove from all cells in box.  Remove assigned value from domain
@@ -101,10 +196,32 @@ public class sudoku extends file_selector {
         int col_offset = (inference_col / 4) * 4;
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                world_array[row_offset + i][col_offset + j].constraints.remove(inference_val);
+                if (!world_array[row_offset + i][col_offset + j].constraints.contains(inference_val)) {
+                    world_array[row_offset + i][col_offset + j].constraints.add(inference_val);
+                    pairing my_pairing = new pairing();
+                    my_pairing.value = inference_val;
+                    my_pairing.cell = world_array[row_offset + i][col_offset + j];
+                    inferences_list.add(my_pairing);
+                }
             }
         }
 
+        //if any cell has 16 constraints, meaning it has no legal remaining values, set inferences_list to null and return
+        for (cell[] array1 : world_array) {
+            for (cell value : array1) {
+                if (value.constraints.size() == 16) {
+                    inferences_list = null;
+                }
+            }
+        }
+        return inferences_list;
+    }
+
+    public void undo_inferences(ArrayList inferences_list) {
+        ArrayList<pairing> undo_list = inferences_list;
+        for (pairing pairing : undo_list) {
+            pairing.cell.constraints.remove(pairing.value);
+        }
     }
 
     public void file_to_array(File file) throws IOException {
@@ -122,6 +239,11 @@ public class sudoku extends file_selector {
                     String value = Character.toString(c);
                     cell in_cell = new cell(value, i, line_count);
                     world_array[line_count][i] = in_cell;
+
+                    //add value to world_constraints if not already a member of that arraylist
+                    if (!world_constraints.contains(value) && value != "-") {
+                        world_constraints.add(value);
+                    }
                 }
             }
         } catch (FileNotFoundException e) {
@@ -129,20 +251,13 @@ public class sudoku extends file_selector {
         }
     }
 
-
-    //@param - a cell
-    //@return - array with all cells that share a domain with input cell
-    // public array shared_space(cell cell) {
-//
-    //}
-
     //class to contain all info for each variable
     public class cell {
 
-        String value;
+        String value = null;
         int col;
         int row;
-        ArrayList constraints;
+        ArrayList<String> constraints;
         int attempted_assignments;
 
 
@@ -160,5 +275,10 @@ public class sudoku extends file_selector {
             constraints = null;
             attempted_assignments = 0;
         }
+    }
+
+    class pairing {
+        cell cell;
+        String value;
     }
 }

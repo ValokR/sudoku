@@ -1,28 +1,33 @@
 import javax.swing.*;
-import java.util.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 
 /**
  * Created by neil on 7/12/17.
  */
 public class file_selector {
-    final JFileChooser fc = new JFileChooser();
     public JPanel panel1;
     public File file;
-    private JButton button1;
+    JButton button1;
 
     public file_selector() {
+        final JFileChooser fc = new JFileChooser();
         button1.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                int returnVal = fc.showOpenDialog(panel1);
+            public void actionPerformed(ActionEvent e) {
+                int returnVal = fc.showOpenDialog(null);
 
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    File file = fc.getSelectedFile();
+                    file = fc.getSelectedFile();
+                    System.out.println("You chose to open " + file.getName());
                 }
+
             }
         });
+    }
+
+    public File getFile() {
+        return file;
     }
 }
